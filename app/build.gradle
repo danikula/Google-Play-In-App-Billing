@@ -1,0 +1,45 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.novoda:bintray-release:0.3.2'
+    }
+}
+
+repositories {
+    maven { url 'https://dl.bintray.com/alexeydanilov/maven' }
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'bintray-release'
+
+android {
+    compileSdkVersion 22
+    buildToolsVersion '22.0.1'
+
+    defaultConfig {
+        minSdkVersion 8
+        targetSdkVersion 22
+        versionCode 1
+        versionName '1.0'
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+    compile 'org.bitbucket.yahor_makouski:slf4j-composite:1.2'
+    compile 'org.slf4j:slf4j-api:1.7.7'
+}
+
+publish {
+    userOrg = 'alexeydanilov'
+    groupId = 'com.danikula.iab'
+    artifactId = 'in-app-billing'
+    publishVersion = '1.0'
+    description = 'Google Play Billing Library from android sdk'
+    website = 'https://github.com/danikula/Google-Play-In-App-Billing'
+}
