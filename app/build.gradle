@@ -39,7 +39,7 @@ publish {
     userOrg = 'alexeydanilov'
     groupId = 'com.danikula.iab'
     artifactId = 'in-app-billing'
-    publishVersion = '1.0'
+    publishVersion = '1.0.1'
     description = 'Google Play Billing Library from android sdk'
     website = 'https://github.com/danikula/Google-Play-In-App-Billing'
 }
