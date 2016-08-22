@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.danikula.iab:in-app-billing:1.0@aar'
+    compile 'com.danikula.iab:in-app-billing:1.5@aar'
 }
 ```
 
@@ -24,7 +24,7 @@ Thanks for [bintray-release](https://github.com/novoda/bintray-release) for easy
 
 ## Licence
 
-    Copyright 2015 Alexey Danilov
+    Copyright 2016 Alexey Danilov
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.

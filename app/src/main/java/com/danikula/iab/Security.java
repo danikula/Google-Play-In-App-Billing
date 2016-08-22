@@ -16,6 +16,7 @@
 package com.danikula.iab;
 
 import android.text.TextUtils;
+import android.util.Base64;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,16 +76,13 @@ public class Security {
      */
     public static PublicKey generatePublicKey(String encodedPublicKey) {
         try {
-            byte[] decodedKey = Base64.decode(encodedPublicKey);
+            byte[] decodedKey = Base64.decode(encodedPublicKey, Base64.DEFAULT);
             KeyFactory keyFactory = KeyFactory.getInstance(KEY_FACTORY_ALGORITHM);
             return keyFactory.generatePublic(new X509EncodedKeySpec(decodedKey));
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         } catch (InvalidKeySpecException e) {
             LOG.error("Invalid key specification.", new IabException(null));
-            throw new IllegalArgumentException(e);
-        } catch (Base64DecoderException e) {
-            LOG.error("Base64 decoding failed.", new IabException(null));
             throw new IllegalArgumentException(e);
         }
     }
@@ -99,13 +97,19 @@ public class Security {
      * @return true if the data and signature match
      */
     public static boolean verify(PublicKey publicKey, String signedData, String signature) {
-        Signature sig;
+        byte[] signatureBytes;
         try {
-            sig = Signature.getInstance(SIGNATURE_ALGORITHM);
+            signatureBytes = Base64.decode(signature, Base64.DEFAULT);
+        } catch (IllegalArgumentException e) {
+            LOG.error("Base64 decoding failed.", new IabException(null));
+            return false;
+        }
+        try {
+            Signature sig = Signature.getInstance(SIGNATURE_ALGORITHM);
             sig.initVerify(publicKey);
             sig.update(signedData.getBytes());
-            if (!sig.verify(Base64.decode(signature))) {
-                LOG.error("Signature verification failed.", new IabException(null));
+            if (!sig.verify(signatureBytes)) {
+                LOG.error("Signature verification failed.");
                 return false;
             }
             return true;
@@ -115,8 +119,6 @@ public class Security {
             LOG.error("Invalid key specification.", e);
         } catch (SignatureException e) {
             LOG.error("Signature exception.", e);
-        } catch (Base64DecoderException e) {
-            LOG.error("Base64 decoding failed.", e);
         }
         return false;
     }
