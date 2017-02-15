@@ -432,6 +432,7 @@ public class IabHelper {
             throws IabAsyncInProgressException {
         checkNotDisposed();
         checkSetupDone("launchPurchaseFlow");
+        checkServiceConnected("launchPurchaseFlow");
         flagStartAsync("launchPurchaseFlow");
         IabResult result;
 
@@ -516,6 +517,7 @@ public class IabHelper {
 
         checkNotDisposed();
         checkSetupDone("handleActivityResult");
+        checkServiceConnected("handleActivityResult");
 
         // end of async purchase operation that started on launchPurchaseFlow
         flagEndAsync();
@@ -614,6 +616,7 @@ public class IabHelper {
                                     List<String> moreSubsSkus) throws IabException {
         checkNotDisposed();
         checkSetupDone("queryInventory");
+        checkServiceConnected("queryInventory");
         try {
             Inventory inv = new Inventory();
             int r = queryPurchases(inv, ITEM_TYPE_INAPP);
@@ -682,6 +685,7 @@ public class IabHelper {
         final Handler handler = new Handler();
         checkNotDisposed();
         checkSetupDone("queryInventory");
+        checkServiceConnected("queryInventory");
         flagStartAsync("refresh inventory");
         (new Thread(new Runnable() {
             public void run() {
@@ -725,6 +729,7 @@ public class IabHelper {
     void consume(Purchase itemInfo) throws IabException {
         checkNotDisposed();
         checkSetupDone("consume");
+        checkServiceConnected("consume");
 
         if (!itemInfo.mItemType.equals(ITEM_TYPE_INAPP)) {
             throw new IabException(IABHELPER_INVALID_CONSUMPTION,
@@ -792,6 +797,7 @@ public class IabHelper {
             throws IabAsyncInProgressException {
         checkNotDisposed();
         checkSetupDone("consume");
+        checkServiceConnected("consume");
         List<Purchase> purchases = new ArrayList<Purchase>();
         purchases.add(purchase);
         consumeAsyncInternal(purchases, listener, null);
@@ -807,6 +813,7 @@ public class IabHelper {
             throws IabAsyncInProgressException {
         checkNotDisposed();
         checkSetupDone("consume");
+        checkServiceConnected("consume");
         consumeAsyncInternal(purchases, null, listener);
     }
 
@@ -849,6 +856,15 @@ public class IabHelper {
         if (!mSetupDone) {
             logError("Illegal state for operation (" + operation + "): IAB helper is not set up.");
             throw new IllegalStateException("IAB helper is not set up. Can't perform operation: " + operation);
+        }
+    }
+
+    // Checks that Billing service is connected; if not, throws an exception.
+    // https://github.com/googlesamples/android-play-billing/pull/46
+    private void checkServiceConnected(String operation) {
+        if (mService == null) {
+            logError("IabHelper.mService is null. Service not connected: " + operation);
+            throw new IllegalStateException("Billing service is disconnected: " + operation);
         }
     }
 
@@ -925,6 +941,7 @@ public class IabHelper {
         // Query purchases
         logDebug("Querying owned items, item type: " + itemType);
         logDebug("Package name: " + mContext.getPackageName());
+        checkServiceConnected("queryPurchases");
         boolean verificationFailed = false;
         String continueToken = null;
 
@@ -986,6 +1003,7 @@ public class IabHelper {
     int querySkuDetails(String itemType, Inventory inv, List<String> moreSkus)
             throws RemoteException, JSONException {
         logDebug("Querying SKU details.");
+        checkServiceConnected("querySkuDetails");
         ArrayList<String> skuList = new ArrayList<String>();
         skuList.addAll(inv.getAllOwnedSkus(itemType));
         if (moreSkus != null) {
