@@ -28,7 +28,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.android.vending.billing.IInAppBillingService;
 
@@ -134,6 +133,8 @@ public class IabHelper {
     // Is an asynchronous operation in progress?
     // (only one at a time can be in progress)
     boolean mAsyncInProgress = false;
+    // Is service bound https://github.com/googlesamples/android-play-billing/issues/28
+    boolean mServiceBound = false;
     // Ensure atomic access to mAsyncInProgress and mDisposeAfterAsync.
     private final Object mAsyncInProgressLock = new Object();
 
@@ -287,7 +288,7 @@ public class IabHelper {
         List<ResolveInfo> intentServices = mContext.getPackageManager().queryIntentServices(serviceIntent, 0);
         if (intentServices != null && !intentServices.isEmpty()) {
             // service available to handle that Intent
-            mContext.bindService(serviceIntent, mServiceConn, Context.BIND_AUTO_CREATE);
+            mServiceBound = mContext.bindService(serviceIntent, mServiceConn, Context.BIND_AUTO_CREATE);
         } else {
             // no service available to handle that Intent
             if (listener != null) {
@@ -315,7 +316,13 @@ public class IabHelper {
         mSetupDone = false;
         if (mServiceConn != null) {
             logDebug("Unbinding from service.");
-            if (mContext != null) mContext.unbindService(mServiceConn);
+            if (mContext == null) {
+                logDebug("Can't unbind service: context is null");
+            } else if (!mServiceBound) {
+                logDebug("Don't unbind service: service wasn't bound");
+            } else {
+                mContext.unbindService(mServiceConn);
+            }
         }
         mDisposed = true;
         mContext = null;
